@@ -21,7 +21,7 @@ jobs: # we now have TWO jobs, so that a workflow can coordinate them!
           key: node-deps-v1-without-orbs-{{ .Branch }}-{{ checksum "package-lock.json" }}
           paths:
             - "~/project/node_modules"
-      - run:
+      - run_test:
           name: Run tests
           # Runs jest with "--maxWorkers=2" argument to avoid OOM issues
           command: npm test # replace with `yarn test` if using yarn
@@ -37,8 +37,7 @@ jobs: # we now have TWO jobs, so that a workflow can coordinate them!
         cache-key: package-lock.json
         cache-version: v1-with-orbs
         use-strict-cache: true
-        steps:
-          - run:
+      - run_install:
           name: Install dependencies with NPM
           command: npm install # replace with `yarn install` if using yarn
       - run:
