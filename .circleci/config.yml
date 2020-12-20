@@ -8,7 +8,8 @@ jobs:
       - image: circleci/node:10
     steps:
       - checkout # special step to check out source code to working directory
-
+      - run: 
+          command: cd blankreact
       - restore_cache: # special step to restore the dependency cache
           # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           keys: 
@@ -16,6 +17,7 @@ jobs:
 
       - run:
           name: Install dependencies with NPM
+          
           command: npm install # replace with `yarn install` if using yarn
 
       - save_cache: # special step to save the dependency cache
@@ -39,7 +41,8 @@ jobs:
       tag: "10"
     steps:
       - checkout # special step to check out source code to working directory
-
+      - run: 
+          command: cd blankreact
       - node/with-cache: # special step to restore the dependency cache
           # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           cache-key: package-lock.json
