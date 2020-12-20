@@ -1,12 +1,60 @@
 version: 2.1
-jobs:
-  npm install testing:
+orbs: 
+  node: circleci/node@4.1.0
+
+jobs: # we now have TWO jobs, so that a workflow can coordinate them!
+  build-without-orb: # This is our first job.
     docker: 
-      - image: cimg/node:14.10.1 # the primary container, where your job's commands are run
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+      - image: circleci/node:latest # specifically, a docker image with ruby 2.4.1
+    # Steps are a list of commands to run inside the docker container above.
     steps:
-      - checkout # check out the code in the project directory
-      - run: cd blankreact # run the `echo` command
-      - run: npm install 
+      - checkout # this pulls code down from GitHub
+      - restore_cache: # special step to restore the dependency cache
+          # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+          keys: 
+            - node-deps-v1-without-orbs-{{ .Branch }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install dependencies with NPM
+          command: npm install
+
+      - save_cache: # special step to save the dependency cache
+          key: node-deps-v1-without-orbs-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          paths:
+            - "~/project/node_modules"
+      - run:
+          name: Run tests
+          # Runs jest with "--maxWorkers=2" argument to avoid OOM issues
+          command: npm test # replace with `yarn test` if using yarn
+      - store_test_results:
+          path: test-results     
+  build-with-orb:
+    executor:
+      name: node/default
+      tag: "latest"
+    steps:
+      - checkout
+      - node/with-cache:
+        cache-key: package-lock.json
+        cache-version: v1-with-orbs
+        use-strict-cache: true
+        steps:
+          - run:
+          name: Install dependencies with NPM
+          command: npm install # replace with `yarn install` if using yarn
+      - run:
+          name: Run tests
+          # Runs jest with "--maxWorkers=2" argument to avoid OOM issues    
+          command: npm test
+
+      - store_artifacts: 
+          path: test-results
+
+      - store_test_results:
+          path: test-results
+# Under the workflows: map, we can coordinate our two jobs, defined above.
+workflows:
+  version: 2.1
+  IQHI_Install_Test: # this is the name of our workflow
+    jobs: # and here we list the jobs we are going to run.
+      - build-with-orb
+      - build-without-orb
