@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import Button from './../button';
 //import {isTSAnyKeyword} from '@babel/types'
 import { render , cleanup } from '@testing-library/react';
-import "jest-dom/extend-expect";
-//import '@testing-library/jest-dom';
+//import "jest-dom/extend-expect";
+import '@testing-library/jest-dom';
 
 import renderer from "react-test-renderer"
 
